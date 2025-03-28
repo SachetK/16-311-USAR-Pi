@@ -4,9 +4,6 @@ from motorgo import Plink
 # Initialize Plink
 plink = Plink()
 
-# Set power supply voltage
-plink.power_supply_voltage = 9.0
-
 # Configure motor channels
 left_front_drive_wheel = plink.channel1
 left_rear_drive_wheel = plink.channel2
@@ -24,34 +21,34 @@ plink.connect()
 
 # Define movement functions
 def move_forward():
-    left_front_drive_wheel.duty_cycle = -1.0
-    left_rear_drive_wheel.duty_cycle = -1.0
-    right_front_drive_wheel.duty_cycle = -1.0
-    right_rear_drive_wheel.duty_cycle = -1.0
+    left_front_drive_wheel.power_command = -1.0
+    left_rear_drive_wheel.power_command = -1.0
+    right_front_drive_wheel.power_command = -1.0
+    right_rear_drive_wheel.power_command = -1.0
 
 def move_backward():
-    left_front_drive_wheel.duty_cycle = 1.0
-    left_rear_drive_wheel.duty_cycle = 1.0
-    right_front_drive_wheel.duty_cycle = 1.0
-    right_rear_drive_wheel.duty_cycle = 1.0
+    left_front_drive_wheel.power_command = 1.0
+    left_rear_drive_wheel.power_command = 1.0
+    right_front_drive_wheel.power_command = 1.0
+    right_rear_drive_wheel.power_command = 1.0
 
 def turn_left():
-    left_front_drive_wheel.duty_cycle = -1.0
-    left_rear_drive_wheel.duty_cycle = -1.0
-    right_front_drive_wheel.duty_cycle = 1.0
-    right_rear_drive_wheel.duty_cycle = 1.0
+    left_front_drive_wheel.power_command = -1.0
+    left_rear_drive_wheel.power_command = -1.0
+    right_front_drive_wheel.power_command = 1.0
+    right_rear_drive_wheel.power_command = 1.0
 
 def turn_right():
-    left_front_drive_wheel.duty_cycle = 1.0
-    left_rear_drive_wheel.duty_cycle = 1.0
-    right_front_drive_wheel.duty_cycle = -1.0
-    right_rear_drive_wheel.duty_cycle = -1.0
+    left_front_drive_wheel.power_command = 1.0
+    left_rear_drive_wheel.power_command = 1.0
+    right_front_drive_wheel.power_command = -1.0
+    right_rear_drive_wheel.power_command = -1.0
 
 def stop_robot():
-    left_front_drive_wheel.duty_cycle = 0
-    left_rear_drive_wheel.duty_cycle = 0
-    right_front_drive_wheel.duty_cycle = 0
-    right_rear_drive_wheel.duty_cycle = 0
+    left_front_drive_wheel.power_command = 0
+    left_rear_drive_wheel.power_command = 0
+    right_front_drive_wheel.power_command = 0
+    right_rear_drive_wheel.power_command = 0
 
 # Map commands to actions
 COMMANDS = {

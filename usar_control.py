@@ -21,16 +21,16 @@ plink.connect()
 
 # Define movement functions
 def move_forward():
-    left_front_drive_wheel.power_command = -1.0
-    left_rear_drive_wheel.power_command = -1.0
-    right_front_drive_wheel.power_command = -1.0
-    right_rear_drive_wheel.power_command = -1.0
-
-def move_backward():
     left_front_drive_wheel.power_command = 1.0
     left_rear_drive_wheel.power_command = 1.0
     right_front_drive_wheel.power_command = 1.0
     right_rear_drive_wheel.power_command = 1.0
+
+def move_backward():
+    left_front_drive_wheel.power_command = -1.0
+    left_rear_drive_wheel.power_command = -1.0
+    right_front_drive_wheel.power_command = -1.0
+    right_rear_drive_wheel.power_command = -1.0
 
 def turn_left():
     left_front_drive_wheel.power_command = -1.0

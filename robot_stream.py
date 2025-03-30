@@ -1,53 +1,89 @@
-import time
-import threading
-import http.server
+import io
+import logging
 import socketserver
+from http import server
+from threading import Condition
+
 from picamera2 import Picamera2
-from io import BytesIO
+from picamera2.encoders import JpegEncoder
+from picamera2.outputs import FileOutput
 
-PORT = 8443  # HTTPS Port
+PAGE = """\
+<html>
+<head>
+<title>picamera2 MJPEG streaming demo</title>
+</head>
+<body>
+<h1>Picamera2 MJPEG Streaming Demo</h1>
+<img src="stream.mjpg" width="640" height="480" />
+</body>
+</html>
+"""
 
-# Initialize Picamera2
-picam2 = Picamera2()
-picam2.configure(picam2.create_preview_configuration(main={"size": (640, 480)}))
-picam2.start()
+class StreamingOutput(io.BufferedIOBase):
+    def __init__(self):
+        self.frame = None
+        self.condition = Condition()
 
-class StreamingHandler(http.server.BaseHTTPRequestHandler):
+    def write(self, buf):
+        with self.condition:
+            self.frame = buf
+            self.condition.notify_all()
+
+
+class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == "/video_feed":
+        if self.path == '/':
+            self.send_response(301)
+            self.send_header('Location', '/index.html')
+            self.end_headers()
+        elif self.path == '/index.html':
+            content = PAGE.encode('utf-8')
             self.send_response(200)
-            self.send_header("Content-type", "multipart/x-mixed-replace; boundary=frame")
+            self.send_header('Content-Type', 'text/html')
+            self.send_header('Content-Length', len(content))
             self.end_headers()
-
-            while True:
-                # Capture a frame from Picamera2
-                frame = picam2.capture_array("main")
-                
-                # Convert frame to JPEG
-                buffer = BytesIO()
-                from PIL import Image
-                Image.fromarray(frame).save(buffer, format="JPEG")
-                jpg_bytes = buffer.getvalue()
-
-                try:
-                    self.wfile.write(b"--frame\r\n")
-                    self.wfile.write(b"Content-Type: image/jpeg\r\n\r\n")
-                    self.wfile.write(jpg_bytes)
-                    self.wfile.write(b"\r\n")
-                    time.sleep(0.1)  # 10 FPS
-                except:
-                    break
+            self.wfile.write(content)
+        elif self.path == '/stream.mjpg':
+            self.send_response(200)
+            self.send_header('Age', 0)
+            self.send_header('Cache-Control', 'no-cache, private')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
+            self.end_headers()
+            try:
+                while True:
+                    with output.condition:
+                        output.condition.wait()
+                        frame = output.frame
+                    self.wfile.write(b'--FRAME\r\n')
+                    self.send_header('Content-Type', 'image/jpeg')
+                    self.send_header('Content-Length', len(frame))
+                    self.end_headers()
+                    self.wfile.write(frame)
+                    self.wfile.write(b'\r\n')
+            except Exception as e:
+                logging.warning(
+                    'Removed streaming client %s: %s',
+                    self.client_address, str(e))
         else:
-            self.send_response(404)
+            self.send_error(404)
             self.end_headers()
 
-# Run the HTTPS server
-def run_server():
-    server = socketserver.TCPServer(("0.0.0.0", PORT), StreamingHandler)
-    
-    print(f"Streaming server started at https://0.0.0.0:{PORT}/video_feed")
+
+class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+
+
+picam2 = Picamera2()
+picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
+output = StreamingOutput()
+picam2.start_recording(JpegEncoder(), FileOutput(output))
+
+try:
+    address = ('', 7123)
+    server = StreamingServer(address, StreamingHandler)
     server.serve_forever()
-
-# Start the server in a separate thread
-threading.Thread(target=run_server, daemon=True).start()
-
+finally:
+    picam2.stop_recording()

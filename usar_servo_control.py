@@ -7,30 +7,24 @@ Device.pin_factory = PiGPIOFactory()
 
 # Define the servo with angle limits
 servo = AngularServo(13, min_angle=00, max_angle=120)
-servo_angle = 60
-servo.angle = servo_angle
 
-def set_angle(angle):
-    """ Move the servo to a specific angle (0-120°). """
-    servo.angle = angle
+def camera_top():
+    servo.angle = 0
     sleep(0.5)
 
-def increase_angle():
-    global servo_angle
-    if servo_angle > 0:
-        servo_angle -= 10
-    servo.angle = servo_angle
+def camera_middle():
+    servo.angle = 60
+    sleep(0.5)
 
-def decrease_angle():
-    global servo_angle
-    if servo_angle < 120:
-        servo_angle += 10
-    servo.angle = servo_angle
+def camera_bottom():
+    servo.angle = 120
+    sleep(0.5)
 
 # Map commands to actions
 COMMANDS = {
-    "CAMERA_UP": increase_angle,
-    "CAMERA_DOWN": decrease_angle,
+    "CAMERA_TOP": camera_top,
+    "CAMERA_MIDDLE": camera_middle,
+    "CAMERA_BOTTOM": camera_bottom,
 }
 
 # Set up socket server

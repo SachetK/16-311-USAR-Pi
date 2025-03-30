@@ -21,27 +21,27 @@ plink.connect()
 
 # Define movement functions
 def move_forward():
-    left_front_drive_wheel.power_command = 1.0
+    left_front_drive_wheel.power_command = -1.0
     left_rear_drive_wheel.power_command = 1.0
-    right_front_drive_wheel.power_command = 1.0
+    right_front_drive_wheel.power_command = -1.0
     right_rear_drive_wheel.power_command = 1.0
 
 def move_backward():
-    left_front_drive_wheel.power_command = -1.0
+    left_front_drive_wheel.power_command = 1.0
     left_rear_drive_wheel.power_command = -1.0
-    right_front_drive_wheel.power_command = -1.0
+    right_front_drive_wheel.power_command = 1.0
     right_rear_drive_wheel.power_command = -1.0
 
 def turn_left():
-    left_front_drive_wheel.power_command = -1.0
+    left_front_drive_wheel.power_command = 1.0
     left_rear_drive_wheel.power_command = -1.0
-    right_front_drive_wheel.power_command = 1.0
+    right_front_drive_wheel.power_command = -1.0
     right_rear_drive_wheel.power_command = 1.0
 
 def turn_right():
-    left_front_drive_wheel.power_command = 1.0
+    left_front_drive_wheel.power_command = -1.0
     left_rear_drive_wheel.power_command = 1.0
-    right_front_drive_wheel.power_command = -1.0
+    right_front_drive_wheel.power_command = 1.0
     right_rear_drive_wheel.power_command = -1.0
 
 def stop_robot():
@@ -79,6 +79,7 @@ while True:
             if not data:
                 break  # Client disconnected
             print(f"Received: {data}")
+            
             if data in COMMANDS:
                 COMMANDS[data]()  # Execute the corresponding function
             else:
@@ -87,4 +88,3 @@ while True:
         print("Client disconnected")
 
     client_socket.close()
-    break

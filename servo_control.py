@@ -1,32 +1,25 @@
-import RPi.GPIO as GPIO
-import time
+from gpiozero.pins.pigpio import PiGPIOFactory
+from gpiozero import Device, AngularServo
+from time import sleep
 
-# Set up GPIO
-SERVO_PIN = 18  # Change to the GPIO pin you are using
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(SERVO_PIN, GPIO.OUT)
+Device.pin_factory = PiGPIOFactory()
 
-# Set up PWM
-pwm = GPIO.PWM(SERVO_PIN, 50)  # 50 Hz frequency
-pwm.start(0)
+# Define the servo with angle limits
+servo = AngularServo(13, min_angle=00, max_angle=120)
 
 def set_angle(angle):
-    duty_cycle = (angle / 18) + 2  # Convert angle to duty cycle
-    GPIO.output(SERVO_PIN, True)
-    pwm.ChangeDutyCycle(duty_cycle)
-    time.sleep(0.5)
-    GPIO.output(SERVO_PIN, False)
-    pwm.ChangeDutyCycle(0)
+    """ Move the servo to a specific angle (0-120°). """
+    servo.angle = angle
+    sleep(0.5)
 
 try:
     while True:
-        angle = float(input("Enter angle (0-180): "))
-        if 0 <= angle <= 180:
+        angle = float(input("Enter angle (0 - 120): "))
+        if 0 <= angle <= 120:
             set_angle(angle)
         else:
-            print("Please enter a valid angle between 0 and 180.")
+            print("Please enter a valid angle between 0 and 120.")
 except KeyboardInterrupt:
     print("Exiting...")
 finally:
-    pwm.stop()
-    GPIO.cleanup()
+    servo.angle = None  # Stop sending signal

@@ -5,19 +5,25 @@ import socket
 
 Device.pin_factory = PiGPIOFactory()
 
-# Define the servo with angle limits
-servo = AngularServo(13, min_angle=00, max_angle=120)
+# Define the camera_servo with angle limits
+camera_servo = AngularServo(13, min_angle=0, max_angle=120)
+claw_servo = AngularServo(12, min_angle=0, max_angle=120)
+# lever_servo = AngularServo(8, min_angle=0, max_angle=120)
+
+camera_servo.angle = 60
+claw_servo.angle = 120
+# lever_servo.angle = 0
 
 def camera_top():
-    servo.angle = 0
+    camera_servo.angle = 0
     sleep(0.5)
 
 def camera_middle():
-    servo.angle = 60
+    camera_servo.angle = 60
     sleep(0.5)
 
 def camera_bottom():
-    servo.angle = 120
+    camera_servo.angle = 120
     sleep(0.5)
 
 # Map commands to actions
@@ -35,7 +41,7 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen(5)
 
-print(f"Robot (servo) server listening on {HOST}:{PORT}")
+print(f"Robot (camera_servo) server listening on {HOST}:{PORT}")
 
 while True:
     client_socket, addr = server_socket.accept()

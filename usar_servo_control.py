@@ -8,11 +8,14 @@ Device.pin_factory = PiGPIOFactory()
 # Define the camera_servo with angle limits
 camera_servo = AngularServo(13, min_angle=0, max_angle=120)
 claw_servo = AngularServo(12, min_angle=0, max_angle=120)
-# lever_servo = AngularServo(8, min_angle=0, max_angle=120)
+lever_servo = AngularServo(19, min_angle=0, max_angle=120)
 
 camera_servo.angle = 60
 claw_servo.angle = 120
-# lever_servo.angle = 0
+lever_servo.angle = 0
+
+CLAW_POSITION = "TOP"
+LEVER_POSITION = "TOP"
 
 def camera_top():
     camera_servo.angle = 0
@@ -26,11 +29,39 @@ def camera_bottom():
     camera_servo.angle = 120
     sleep(0.5)
 
+def toggle_claw():
+    global CLAW_POSITION
+    if CLAW_POSITION == "BOTTOM":
+        claw_servo.angle = 60
+        sleep(0.5)
+        claw_servo.angle = 0
+        sleep(0.5)
+        CLAW_POSITION = "TOP"
+    else:
+        claw_servo.angle = 60
+        sleep(0.5)
+        claw_servo.angle = 120
+        sleep(0.5)
+        CLAW_POSITION = "BOTTOM"
+
+def toggle_lever():
+    global LEVER_POSITION
+    if LEVER_POSITION == "BOTTOM":
+        lever_servo.angle = 0
+        sleep(0.5)
+        LEVER_POSITION = "TOP"
+    else:
+        lever_servo.angle = 120
+        sleep(0.5)
+        LEVER_POSITION = "BOTTOM"
+
 # Map commands to actions
 COMMANDS = {
     "CAMERA_TOP": camera_top,
     "CAMERA_MIDDLE": camera_middle,
     "CAMERA_BOTTOM": camera_bottom,
+    "TOGGLE_CLAW": toggle_claw,
+    "TOGGLE_LEVER": toggle_lever
 }
 
 # Set up socket server

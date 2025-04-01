@@ -5,10 +5,10 @@ from motorgo import Plink
 plink = Plink()
 
 # Configure motor channels
-left_front_drive_wheel = plink.channel1
-left_rear_drive_wheel = plink.channel4
-right_front_drive_wheel = plink.channel2
-right_rear_drive_wheel = plink.channel3
+left_front_drive_wheel = plink.channel3
+left_rear_drive_wheel = plink.channel2
+right_front_drive_wheel = plink.channel4
+right_rear_drive_wheel = plink.channel1
 
 # Set motor voltage limits
 left_front_drive_wheel.motor_voltage_limit = 6.0

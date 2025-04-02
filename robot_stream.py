@@ -1,22 +1,28 @@
-from flask import Flask, render_template, Response
-from camera import VideoCamera
+import base64
+import cv2
+import zmq
+import numpy as np
+import time
 
-app = Flask(__name__)
+print("Connecting to camera server")
+context = zmq.Context()
+footage_socket = context.socket(zmq.PUB)
+footage_socket.bind('tcp://*:7123')
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+camera = cv2.VideoCapture(0)  # init the camera
+print("Connected to camera server!")
 
-def gen(camera):
-    while True:
-        frame = camera.get_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+while True:
+    try:
+        grabbed, frame = camera.read()  # grab the current frame
+        if not grabbed:
+           continue
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(gen(VideoCamera()),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+        frame = cv2.resize(frame, (640, 480))  # resize the frame
+        encoded, buffer = cv2.imencode('.jpg', frame)
+        footage_socket.send(buffer.tobytes())
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7123, debug=True)
+    except KeyboardInterrupt:
+        camera.release()
+        cv2.destroyAllWindows()
+        break

@@ -32,13 +32,13 @@ def move_backward():
     right_front_drive_wheel.power_command = 1.0
     right_rear_drive_wheel.power_command = -1.0
 
-def turn_left():
+def turn_right():
     left_front_drive_wheel.power_command = 1.0
     left_rear_drive_wheel.power_command = -1.0
     right_front_drive_wheel.power_command = -1.0
     right_rear_drive_wheel.power_command = 1.0
 
-def turn_right():
+def turn_left():
     left_front_drive_wheel.power_command = -1.0
     left_rear_drive_wheel.power_command = 1.0
     right_front_drive_wheel.power_command = 1.0

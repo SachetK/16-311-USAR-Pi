@@ -13,37 +13,23 @@ data, client_addr = sock.recvfrom(1024)
 client_ip = client_addr[0]
 print("Client connected:", client_ip)
 
-# cmd = [
-#    "ffmpeg",
-#    "-f", "v4l2",
-#    "-input_format", "h264",
-#    "-video_size", "640x480",
-#    "-framerate", "30",
-#    "-i", "/dev/video0",
-#
-#    "-c:v", "copy",
-#    "-bsf:v", "h264_mp4toannexb",
-#    "-f", "mpegts",
-#    f"rtp://{client_ip}:5000"
-# ]
-
 cmd = [
     "ffmpeg",
 
     "-f", "v4l2",
-    "-input_format", "mjpeg",
+    "-input_format", "yuyv422",
     "-video_size", "640x480",
-    "-framerate", "30",
-    "-i", "/dev/video0",
+    "-framerate", "30",          
+    "-i", "/dev/video0",        
 
     "-vcodec", "libx264",
     "-preset", "ultrafast",
     "-tune", "zerolatency",
-    "-g", "30",                # keyframe every 1 sec
+    "-g", "30",
     "-pix_fmt", "yuv420p",
 
     "-f", "rtp",
-    "-sdp_file", "stream.sdp",   # auto-generate SDP
+    "-sdp_file", "stream_ps3.sdp",
     f"rtp://{client_ip}:5000"
 ]
 

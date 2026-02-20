@@ -1,28 +1,51 @@
-import base64
-import cv2
-import zmq
-import numpy as np
-import time
+import socket
+import subprocess
 
-print("Connecting to camera server")
-context = zmq.Context()
-footage_socket = context.socket(zmq.PUB)
-footage_socket.bind('tcp://*:7123')
+UDP_PORT = 7123
+VIDEO_PORT = 5000
 
-camera = cv2.VideoCapture(0)  # init the camera
-print("Connected to camera server!")
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind(("", UDP_PORT))
 
-while True:
-    try:
-        grabbed, frame = camera.read()  # grab the current frame
-        if not grabbed:
-           continue
+print("Waiting for client HELLO...")
+data, client_addr = sock.recvfrom(1024)
 
-        frame = cv2.resize(frame, (640, 480))  # resize the frame
-        encoded, buffer = cv2.imencode('.jpg', frame)
-        footage_socket.send(buffer.tobytes())
+client_ip = client_addr[0]
+print("Client connected:", client_ip)
 
-    except KeyboardInterrupt:
-        camera.release()
-        cv2.destroyAllWindows()
-        break
+# cmd = [
+#    "ffmpeg",
+#    "-f", "v4l2",
+#    "-input_format", "h264",
+#    "-video_size", "640x480",
+#    "-framerate", "30",
+#    "-i", "/dev/video0",
+#
+#    "-c:v", "copy",
+#    "-bsf:v", "h264_mp4toannexb",
+#    "-f", "mpegts",
+#    f"rtp://{client_ip}:5000"
+# ]
+
+cmd = [
+    "ffmpeg",
+
+    "-f", "v4l2",
+    "-input_format", "mjpeg",
+    "-video_size", "640x480",
+    "-framerate", "30",
+    "-i", "/dev/video0",
+
+    "-vcodec", "libx264",
+    "-preset", "ultrafast",
+    "-tune", "zerolatency",
+    "-g", "30",                # keyframe every 1 sec
+    "-pix_fmt", "yuv420p",
+
+    "-f", "rtp",
+    "-sdp_file", "stream.sdp",   # auto-generate SDP
+    f"rtp://{client_ip}:5000"
+]
+
+print("Starting video stream...")
+subprocess.run(cmd)
